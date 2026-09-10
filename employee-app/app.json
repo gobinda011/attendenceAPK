@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "Attendance",
+    "slug": "attendance-employee-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "com.yourcompany.attendance",
+      "permissions": ["CAMERA"]
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Attendance to access your camera to verify your identity for check-in and check-out."
+        }
+      ]
+    ]
+  }
+}
