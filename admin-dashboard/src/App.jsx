@@ -8,6 +8,8 @@ import EmployeeDetail from './pages/EmployeeDetail.jsx';
 import FaceRegistration from './pages/FaceRegistration.jsx';
 import Attendance from './pages/Attendance.jsx';
 
+import Security from './pages/Security.jsx';
+
 function RequireAuth({ children }) {
   const token = localStorage.getItem('admin_token');
   return token ? children : <Navigate to="/login" replace />;
@@ -31,6 +33,7 @@ export default function App() {
         <Route path="employees/:id" element={<EmployeeDetail />} />
         <Route path="employees/:id/register-face" element={<FaceRegistration />} />
         <Route path="attendance" element={<Attendance />} />
+        <Route path="security" element={<Security />} />//new update for security page
       </Route>
     </Routes>
   );

@@ -23,6 +23,9 @@ module.exports = {
   faceServiceUrl: process.env.FACE_SERVICE_URL || 'http://127.0.0.1:8000',
   faceMatchThreshold: parseFloat(process.env.FACE_MATCH_THRESHOLD || '0.80'),
 
+  // new update 
+  totpEncryptionKey: required('TOTP_ENCRYPTION_KEY'),
+
   uploadMaxSizeMb: parseInt(process.env.UPLOAD_MAX_SIZE_MB || '5', 10),
 
   allowedOrigins: (process.env.ALLOWED_ORIGINS || '*')

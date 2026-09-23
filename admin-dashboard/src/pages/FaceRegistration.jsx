@@ -9,7 +9,7 @@ import client from '../api/client';
 export default function FaceRegistration() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const videoRef = useRef(null);
+  const videoRef = useRef(null); 
   const canvasRef = useRef(null);
   const [status, setStatus] = useState('idle'); // idle | streaming | submitting | success | error
   const [message, setMessage] = useState('');

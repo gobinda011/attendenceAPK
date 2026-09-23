@@ -19,6 +19,7 @@ export default function Layout() {
           <NavLink to="/dashboard" className={({ isActive }) => (isActive ? 'active' : '')}>Dashboard</NavLink>
           <NavLink to="/employees" className={({ isActive }) => (isActive ? 'active' : '')}>Employees</NavLink>
           <NavLink to="/attendance" className={({ isActive }) => (isActive ? 'active' : '')}>Attendance</NavLink>
+          <NavLink to="/Security" className={({ isActive }) => (isActive ? 'active' : '')}>2FA</NavLink>
         </nav>
         <div className="admin-info">
           Signed in as {adminName}

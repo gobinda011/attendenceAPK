@@ -23,10 +23,27 @@ export default function Attendance() {
     load();
   }
 
-  function exportCsv() {
-    const url = `${client.defaults.baseURL}/reports/attendance?format=csv`;
-    window.open(url, '_blank');
-  }
+  // function exportCsv() {
+  //   const url = `${client.defaults.baseURL}/reports/attendance?format=csv`;
+  //   window.open(url, '_blank');
+  // }
+  async function exportCsv() {
+  const response = await client.get('/reports/attendance?format=csv', {
+    responseType: 'blob',
+  });
+
+  const blob = new Blob([response.data], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'attendance-report.csv';
+  document.body.appendChild(link);
+  link.click();
+
+  link.remove();
+  window.URL.revokeObjectURL(url);
+}
 
   return (
     <div>
