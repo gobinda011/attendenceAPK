@@ -8,12 +8,12 @@ export default function HomeScreen({ onCheckIn, onCheckOut }) {
 // Get the full device height and width dynamically
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
   return (
-    <View style={{ flex: 1 }}>
-      {/* Background Image sits behind everything */}  
-      <Image 
-        source={require('./img.jpeg')} 
-        style={styles.backgroundImage}
-      />
+    // <View style={{ flex: 1 }}>
+    //   {/* Background Image sits behind everything */}  
+    //   <Image 
+    //     source={require('./img.jpeg')} 
+    //     style={styles.backgroundImage}
+    //   />
       
     <View style={styles.container}>
       <Text style={styles.title}>ATTENDANCE SYSTEM</Text>
@@ -27,7 +27,7 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
         <Text style={styles.buttonText}>CHECK OUT</Text>
       </TouchableOpacity>
     </View>
-    </View>
+   // </View>
   );
 }
 

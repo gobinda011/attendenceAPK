@@ -64,6 +64,8 @@ export default function Login() {
   const [token, setToken] = useState('');
   const [challengeToken, setChallengeToken] = useState('');
   const [twoFactorRequired, setTwoFactorRequired] = useState(false);
+  const [useRecoveryCode, setUseRecoveryCode] = useState(false);
+const [recoveryCode, setRecoveryCode] = useState('');
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -121,6 +123,31 @@ export default function Login() {
     }
   }
 
+
+  async function handleRecoveryLogin(e) {
+  e.preventDefault();
+
+  setError('');
+  setLoading(true);
+
+  try {
+    const { data } = await client.post('/auth/2fa/recovery', {
+      challengeToken,
+      recoveryCode,
+    });
+
+    completeLogin(data);
+  } catch (err) {
+    setError(
+      err.response?.data?.message ||
+        'Invalid or already used recovery code'
+    );
+  } finally {
+    setLoading(false);
+  }
+}
+
+
   function completeLogin(data) {
     localStorage.setItem('admin_token', data.token);
     localStorage.setItem('admin_name', data.admin.name);
@@ -132,8 +159,9 @@ export default function Login() {
   // 2FA CODE SCREEN
   // -----------------------------
   if (twoFactorRequired) {
-    return (
-      <div className="login-shell">
+  return (
+    <div className="login-shell">
+      {!useRecoveryCode ? (
         <form
           className="login-card"
           onSubmit={handleTwoFactorLogin}
@@ -141,7 +169,8 @@ export default function Login() {
           <h1>Two-factor authentication</h1>
 
           <p className="sub">
-            Enter the 6-digit code from your authenticator app.
+            Enter the 6-digit code from your
+            authenticator app.
           </p>
 
           <div className="field">
@@ -168,9 +197,13 @@ export default function Login() {
             className="btn"
             type="submit"
             style={{ width: '100%' }}
-            disabled={loading || token.length !== 6}
+            disabled={
+              loading || token.length !== 6
+            }
           >
-            {loading ? 'Verifying…' : 'Verify and sign in'}
+            {loading
+              ? 'Verifying…'
+              : 'Verify and sign in'}
           </button>
 
           {error && (
@@ -187,8 +220,110 @@ export default function Login() {
               marginTop: 10,
             }}
             onClick={() => {
+              setUseRecoveryCode(true);
+              setToken('');
+              setError('');
+            }}
+          >
+            Use a recovery code instead
+          </button>
+
+          <button
+            type="button"
+            className="btn secondary"
+            style={{
+              width: '100%',
+              marginTop: 10,
+            }}
+            onClick={() => {
               setTwoFactorRequired(false);
               setChallengeToken('');
+              setToken('');
+              setRecoveryCode('');
+              setError('');
+            }}
+          >
+            Back to login
+          </button>
+        </form>
+      ) : (
+        <form
+          className="login-card"
+          onSubmit={handleRecoveryLogin}
+        >
+          <h1>Recovery code</h1>
+
+          <p className="sub">
+            Enter one of the recovery codes you
+            received when you enabled 2FA.
+          </p>
+
+          <div className="field">
+            <label>Recovery code</label>
+
+            <input
+              type="text"
+              autoComplete="off"
+              value={recoveryCode}
+              onChange={(e) =>
+                setRecoveryCode(
+                  e.target.value
+                    .replace(/[\s-]/g, '')
+                    .toUpperCase()
+                )
+              }
+              placeholder="XXXXXXXXXX"
+              autoFocus
+              required
+            />
+          </div>
+
+          <button
+            className="btn"
+            type="submit"
+            style={{ width: '100%' }}
+            disabled={
+              loading || recoveryCode.length === 0
+            }
+          >
+            {loading
+              ? 'Verifying…'
+              : 'Use recovery code'}
+          </button>
+
+          {error && (
+            <p className="error-text">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="button"
+            className="btn secondary"
+            style={{
+              width: '100%',
+              marginTop: 10,
+            }}
+            onClick={() => {
+              setUseRecoveryCode(false);
+              setRecoveryCode('');
+              setError('');
+            }}
+          >
+            Use authenticator code instead
+          </button>
+
+          <button
+            type="button"
+            className="btn secondary"
+            style={{
+              width: '100%',
+              marginTop: 10,
+            }}
+            onClick={() => {
+              setTwoFactorRequired(false);
+              setChallengeToken('');
+              setRecoveryCode('');
               setToken('');
               setError('');
             }}
@@ -196,9 +331,10 @@ export default function Login() {
             Back to login
           </button>
         </form>
-      </div>
-    );
-  }
+      )}
+    </div>
+  );
+}
 
   // -----------------------------
   // EMAIL + PASSWORD SCREEN

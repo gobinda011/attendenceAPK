@@ -33,6 +33,10 @@ router.get(
   authController.getTwoFactorStatus
 );
 
+router.post(
+  '/2fa/recovery',
+  authController.verifyTwoFactorRecovery
+);
 //new update to disable 2FA route
 router.post(
   '/2fa/disable',

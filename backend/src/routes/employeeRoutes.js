@@ -10,6 +10,19 @@ router.use(auth);
 
 router.get('/', employeeController.list);
 router.post('/', validate(createEmployeeSchema), employeeController.create);
+router.post(
+  '/:id/reset-password',
+  employeeController.resetPassword
+);
+router.post(
+  '/:id/enable-login',
+  employeeController.enableLogin
+);
+
+router.post(
+  '/:id/disable-login',
+  employeeController.disableLogin
+);
 router.get('/:id', employeeController.getOne);
 router.put('/:id', validate(updateEmployeeSchema), employeeController.update);
 router.delete('/:id', employeeController.remove); // => deactivate (Rule 9)

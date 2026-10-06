@@ -15,6 +15,9 @@ const attendanceRoutes = require('./routes/attendanceRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 
+const employeeAuthRoutes = require('./routes/employeeAuthRoutes');
+const employeeAttendanceRoutes = require('./routes/employeeAttendanceRoutes');
+
 const app = express();
 
 // --- Security middleware (Section 7: Non-Functional Requirements) ---
@@ -42,7 +45,8 @@ app.use('/api/employees', employeeRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportRoutes);
-
+app.use('/api/employee-auth', employeeAuthRoutes);
+app.use('/api/employee-attendance', employeeAttendanceRoutes);
 app.use((req, res) => res.status(404).json({ success: false, message: 'Route not found' }));
 app.use(errorMiddleware);
 

@@ -15,14 +15,138 @@ async function list(req, res, next) {
   }
 }
 
+// async function create(req, res, next) {
+//   try {
+//     const employee = await employeeService.createEmployee(req.body);
+//     return success(res, 201, 'Employee created', { employee });
+//   } catch (err) {
+//     next(err);
+//   }
+// }
 async function create(req, res, next) {
   try {
-    const employee = await employeeService.createEmployee(req.body);
-    return success(res, 201, 'Employee created', { employee });
+    const { employee, temporaryPassword } =
+      await employeeService.createEmployee(req.body);
+
+    return success(res, 201, 'Employee created', {
+      employee,
+      temporaryPassword,
+    });
   } catch (err) {
     next(err);
   }
 }
+
+async function resetPassword(req, res, next) {
+  try {
+    const result = await employeeService.resetEmployeePassword(
+      req.params.id
+    );
+
+    if (!result.success) {
+      return failure(res, 404, result.message);
+    }
+
+    await AuditLog.create({
+      adminId: req.admin.id,
+      action: 'RESET_EMPLOYEE_PASSWORD',
+      entity: 'Employee',
+      entityId: req.params.id,
+      previousValue: null,
+      newValue: {
+        passwordReset: true,
+        mustChangePassword: true,
+      },
+    });
+
+    return success(
+      res,
+      200,
+      'Employee password reset successfully',
+      {
+        temporaryPassword: result.temporaryPassword,
+      }
+    );
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function enableLogin(req, res, next) {
+  try {
+    const result = await employeeService.enableEmployeeLogin(
+      req.params.id
+    );
+
+    if (!result.success) {
+      return failure(res, 400, result.message);
+    }
+
+    await AuditLog.create({
+      adminId: req.admin.id,
+      action: 'ENABLE_EMPLOYEE_LOGIN',
+      entity: 'Employee',
+      entityId: req.params.id,
+      previousValue: {
+        loginEnabled: false,
+      },
+      newValue: {
+        loginEnabled: true,
+        mustChangePassword: true,
+      },
+    });
+
+    return success(
+      res,
+      200,
+      'Employee app login enabled successfully',
+      {
+        temporaryPassword: result.temporaryPassword,
+      }
+    );
+  } catch (err) {
+    next(err);
+  }
+}
+
+
+async function disableLogin(req, res, next) {
+  try {
+    const result = await employeeService.disableEmployeeLogin(
+      req.params.id
+    );
+
+    if (!result.success) {
+      return failure(res, 400, result.message);
+    }
+
+    await AuditLog.create({
+      adminId: req.admin.id,
+      action: 'DISABLE_EMPLOYEE_LOGIN',
+      entity: 'Employee',
+      entityId: req.params.id,
+      previousValue: {
+        loginEnabled: true,
+      },
+      newValue: {
+        loginEnabled: false,
+      },
+    });
+
+    return success(
+      res,
+      200,
+      'Employee App login disabled successfully',
+      {
+        loginEnabled: false,
+      }
+    );
+  } catch (err) {
+    next(err);
+  }
+}
+
+
 
 async function getOne(req, res, next) {
   try {
@@ -99,4 +223,4 @@ async function registerFace(req, res, next) {
   }
 }
 
-module.exports = { list, create, getOne, update, remove, registerFace };
+module.exports = { list, create, getOne, update, resetPassword,enableLogin, disableLogin, remove, registerFace };

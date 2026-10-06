@@ -54,7 +54,8 @@ async function login(req, res, next) {
 
     // If admin has 2FA enabled, do not issue the final JWT yet.
     if (admin.twoFactor?.enabled) {
-      const challengeToken = createChallenge(admin);
+      // const challengeToken = createChallenge(admin);
+      const challengeToken = createChallenge(admin, 'admin');
 
       return success(res, 200, 'Two-factor authentication required', {
         requiresTwoFactor: true,
@@ -209,7 +210,7 @@ async function verifyTwoFactorLogin(req, res, next) {
     let challenge;
 
     try {
-      challenge = verifyChallenge(challengeToken);
+      challenge = verifyChallenge(challengeToken,'admin');
     } catch (error) {
       return failure(res, 401, 'Invalid or expired two-factor challenge');
     }
@@ -264,6 +265,96 @@ async function verifyTwoFactorLogin(req, res, next) {
   }
 }
 
+
+async function verifyTwoFactorRecovery(req, res, next) {
+  try {
+    const { challengeToken, recoveryCode } = req.body;
+
+    if (!challengeToken || !recoveryCode) {
+      return failure(res, 400, 'Recovery code is required');
+    }
+
+    let challenge;
+
+    try {
+      challenge = verifyChallenge(challengeToken);
+    } catch (error) {
+      return failure(
+        res,
+        401,
+        'Invalid or expired two-factor challenge'
+      );
+    }
+
+    const admin = await Admin.findOne({
+      _id: challenge.id,
+      status: 'active',
+    });
+
+    if (
+      !admin ||
+      !admin.twoFactor?.enabled ||
+      !admin.twoFactor?.recoveryCodes?.length
+    ) {
+      return failure(
+        res,
+        401,
+        'Invalid recovery code'
+      );
+    }
+
+    const {
+      hashRecoveryCode,
+    } = require('../services/twoFactorService');
+
+    const normalizedCode = recoveryCode
+      .replace(/[\s-]/g, '')
+      .toUpperCase();
+
+    const codeHash = await hashRecoveryCode(normalizedCode);
+
+    const recoveryCodeEntry =
+      admin.twoFactor.recoveryCodes.find(
+        (entry) =>
+          entry.codeHash === codeHash &&
+          !entry.usedAt
+      );
+
+    if (!recoveryCodeEntry) {
+      return failure(
+        res,
+        401,
+        'Invalid or already used recovery code'
+      );
+    }
+
+    recoveryCodeEntry.usedAt = new Date();
+
+    await admin.save();
+
+    const finalToken = jwt.sign(
+      {
+        id: admin._id.toString(),
+        role: admin.role,
+      },
+      env.jwtSecret,
+      {
+        expiresIn: env.jwtExpiresIn,
+      }
+    );
+
+    return success(res, 200, 'Login successful', {
+      token: finalToken,
+      admin: {
+        id: admin._id,
+        name: admin.name,
+        role: admin.role,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
 //new update for automatically reflecting the 2fa on off status
 async function getTwoFactorStatus(req, res, next) {
@@ -373,6 +464,7 @@ module.exports = {
   setupTwoFactor,
   verifyTwoFactorSetup,
   verifyTwoFactorLogin,
+  verifyTwoFactorRecovery,
   getTwoFactorStatus,
    disableTwoFactor,
   registerFirstAdmin,
